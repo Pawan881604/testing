@@ -1,42 +1,42 @@
 import { Router } from "express";
 import upload from "../../../middlewares/multer";
 import { authorizeRoles, isAuthenticatedUser } from "../../../middlewares/auth";
-import PostController from "../controllers/post-controller";
+import TagController from "../controllers/tag-controller";
 
-const postRoutes = (postController: PostController) => {
+const tagRoutes = (tagController: TagController) => {
   const router = Router();
   router.post(
     "/add",
     upload.array("images", 10),
     isAuthenticatedUser,
     authorizeRoles("admin", "employee"),
-    postController.create.bind(postController)
+    tagController.create.bind(tagController)
   );
   router.get(
     "/",
     // isAuthenticatedUser,
     // authorizeRoles("admin", "employee"),
-    postController.all.bind(postController)
+    tagController.all.bind(tagController)
   );
   router.get(
     "/data/:id",
     isAuthenticatedUser,
     authorizeRoles("admin", "employee"),
-    postController.get_single_data.bind(postController)
+    tagController.get_single_data.bind(tagController)
   );
   router.delete(
     "/data/:id",
     isAuthenticatedUser,
     authorizeRoles("admin", "employee"),
-    postController.removeItem.bind(postController)
+    tagController.removeItem.bind(tagController)
   );
   router.put(
     "/update",
     upload.array("images", 10),
     isAuthenticatedUser,
     authorizeRoles("admin", "employee"),
-    postController.update.bind(postController)
+    tagController.update.bind(tagController)
   );
   return router;
 };
-export default postRoutes;
+export default tagRoutes;

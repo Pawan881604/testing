@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PostFromCard from "@/components/post/post-form-card";
 import { useImageDrop } from "@/hooks/handleMediaDrop";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -7,17 +7,26 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { postSchema } from "@/zod-schemas/karnal-web-tech/post_zod_schema";
 import { useGetAllcategorieQuery } from "@/state/karnal-web-tech/categorieApi";
 import { useGetAllTagQuery } from "@/state/karnal-web-tech/tagApi";
-import { useAddNewPostMutation } from "@/state/karnal-web-tech/postApi";
+import {
+  useAddNewPostMutation,
+  useGetSingleQuery,
+  useUpdateMutation,
+} from "@/state/karnal-web-tech/postApi";
 import { generate32BitUUID } from "@/lib/service/generate32BitUUID";
 import { useHandleNotifications } from "@/hooks/useHandleNotifications";
-import toast from "react-hot-toast";
-
-export default function AddNewPost() {
+import LoadingPage from "@/components/common/loading-page";
+interface UpdatePostProps {
+  id: string;
+}
+export default function UpdatePost({ id }: UpdatePostProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedTag, setSelectedTags] = useState<string[]>([]);
   const [keywords, setKeywords] = useState<string[]>([]);
   //----------------- use hookes
-  const { imageitemData, files, handleDrop } = useImageDrop();
+  // API Hooks
+  const { imageitemData, files, fileData, setFileData, handleDrop } =
+    useImageDrop();
+  const { data, error, isLoading } = useGetSingleQuery(id);
   const { data: categorie_data, error: categorie_error } =
     useGetAllcategorieQuery({
       rowsPerPage: 1000,
@@ -29,14 +38,17 @@ export default function AddNewPost() {
     page: 1,
     type: "post",
   });
-  const [addNewPost, { error: add_error, isLoading, isSuccess }] =
-    useAddNewPostMutation();
+  const [update, { error: updateError, isSuccess, isLoading: isUpdating }] =
+    useUpdateMutation();
+
+  const { data: apiData } = data || {};
   const { data: categorieApiData } = categorie_data || {};
   const { data: tagApiData } = tag_data || {};
+
   useHandleNotifications({
-    error: categorie_error || tag_Error || add_error,
+    error: categorie_error || tag_Error || updateError || error,
     isSuccess,
-    successMessage: "Post Added successfully!",
+    successMessage: "Post updated successfully!",
     redirectPath: "/karnalwebtech/post",
   });
   const {
@@ -48,26 +60,44 @@ export default function AddNewPost() {
   } = useForm<any>({
     resolver: zodResolver(postSchema),
   });
-  // 2. Define the submit handler
+  // 2. Define the submit handler\
+  const imageURL = apiData?.feature_image?._id;
   const onSubmit: SubmitHandler<any> = async (data) => {
-    if (files.length < 1) {
-      toast.error("Please add a image");
-      return;
-    }
+    const images = files.length > 0 ? files : imageURL;
     const updated_data = {
       ...data,
       keywords,
-      uuid: generate32BitUUID(),
-      images: files,
+      id,
+      images: images,
       tags: selectedTag,
       categorie: selectedCategories,
     };
-    await addNewPost(updated_data);
+    await update(updated_data);
   };
 
+  // Populate Form Data
+  useEffect(() => {
+    if (apiData) {
+      setValue("title", apiData.title);
+      setValue("status", apiData.status);
+      setValue("content", apiData.content);
+      setValue("metaTitle", apiData.seo?.title);
+      setValue("metaDescription", apiData.seo?.meta_description);
+      setValue("metaCanonicalUrl", apiData.seo?.canonical_url);
+      setKeywords(apiData.seo?.keywords || []);
+      setFileData(apiData.feature_image);
+      setSelectedCategories(apiData?.categorie?.map((item: any) => item._id));
+      setSelectedTags(apiData?.tag?.map((item: any) => item._id));
+      // setSelectedTags(apiData?.)
+    }
+  }, [apiData, setValue, setKeywords, setFileData, setSelectedTags]);
   return (
-    <>
-      <form onSubmit={handleSubmit(onSubmit)} className="dark-custom">
+    <form onSubmit={handleSubmit(onSubmit)} className="dark-custom relative">
+      {isLoading ? (
+        <div className="pt-28">
+          <LoadingPage />
+        </div>
+      ) : (
         <PostFromCard
           control={control} // react form
           errors={errors} // react form
@@ -85,11 +115,12 @@ export default function AddNewPost() {
           discard_link={"/karnalwebtech/post"}
           categorieList={categorieApiData?.result}
           selectedTag={selectedTag}
+          image_files={fileData}
           setSelectedTags={setSelectedTags}
           tagList={tagApiData?.result}
-          isLoading={isLoading}
+          isLoading={isUpdating}
         />
-      </form>
-    </>
+      )}
+    </form>
   );
 }

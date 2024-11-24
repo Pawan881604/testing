@@ -8,16 +8,13 @@ import PostFromCard from "@/components/post/post-form-card";
 import LoadingPage from "@/components/common/loading-page";
 import { postSchema } from "@/zod-schemas/karnal-web-tech/post_zod_schema";
 import { useImageDrop } from "@/hooks/handleMediaDrop";
-import {
-  useGetSingleQuery,
-  useUpdateMutation,
-} from "@/state/karnal-web-tech/categorieApi";
 import { useHandleNotifications } from "@/hooks/useHandleNotifications";
+import { useGetSingleQuery, useUpdateMutation } from "@/state/karnal-web-tech/tagApi";
 
-interface UpdatePostCategorieProps {
+interface UpdatePostTagProps {
   id: string;
 }
-export default function UpdatePostCategorie({ id }: UpdatePostCategorieProps) {
+export default function UpdatePostTag({ id }: UpdatePostTagProps) {
 
   // API Hooks
   const { data, error, isLoading } = useGetSingleQuery(id);
@@ -27,7 +24,7 @@ export default function UpdatePostCategorie({ id }: UpdatePostCategorieProps) {
   // Local States
   const [keywords, setKeywords] = useState<string[]>([]);
   const { imageitemData, files, fileData, setFileData, handleDrop } = useImageDrop();
-  useHandleNotifications({ error: error || updateError, isSuccess, successMessage: "Category updated successfully!", redirectPath: "/karnalwebtech/post/categorie" })
+  useHandleNotifications({ error: error || updateError, isSuccess, successMessage: "Tag updated successfully!", redirectPath: "/karnalwebtech/post/tag" })
 
   // Form Handling
   const {
@@ -84,8 +81,8 @@ export default function UpdatePostCategorie({ id }: UpdatePostCategorieProps) {
           selectedCategories={[]}
           setSelectedCategories={() => {}}
           isVisiableCategory={false}
-          pageTitle="Categorie"
-          discard_link="/karnalwebtech/post/categorie"
+          pageTitle="Tag"
+          discard_link="/karnalwebtech/post/tag"
           image_files={fileData}
           isLoading={isUpdating}
         />

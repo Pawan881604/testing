@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import AsyncHandler from "../../../middlewares/AsyncHandler";
 import ErrorHandler from "../../../utils/ErrorHandler";
-import PostService from "../../../services/karnalwebtech/post-service";
+import TagService from "../../../services/karnalwebtech/tag-service";
 
-class PostController {
-  constructor(private postService: PostService) {}
+class TagController {
+  constructor(private tagService: TagService) {}
 
   // Helper function to send a consistent response
   private sendResponse(
@@ -20,14 +20,14 @@ class PostController {
     });
   }
 
-  // Create post with error handling and cleaner response
+  // Create tag with error handling and cleaner response
   create = AsyncHandler.handle(
     async (req: Request, res: Response, next: NextFunction) => {
       const userId = (req as any).user?._id; // Use the correct type for the request user
       const files = req.files;
 
       // Check if URL already exists
-      const isExistingUrl = await this.postService.findByUrl(
+      const isExistingUrl = await this.tagService.findByUrl(
         req.body.metaCanonicalUrl
       );
       if (isExistingUrl) {
@@ -41,34 +41,34 @@ class PostController {
         return next(new ErrorHandler("User is not authenticated", 401)); // Changed to 401
       }
 
-      // Create post
-      const result = await this.postService.create(
+      // Create category
+      const result = await this.tagService.create(
         req.body,
         files,
         userId,
         next
       );
       if (result) {
-        return this.sendResponse(res, "Post created successfully", 201);
+        return this.sendResponse(res, "Tag created successfully", 201);
       }
 
-      return next(new ErrorHandler("Failed to create post", 500));
+      return next(new ErrorHandler("Failed to create category", 500));
     }
   );
 
-  // Get all post with pagination
+  // Get all categories with pagination
   all = AsyncHandler.handle(
     async (req: Request, res: Response, next: NextFunction) => {
       const query = req.query;
       const resultPerPage = Number(query.rowsPerPage);
 
-      // Fetch post and data counter
+      // Fetch tag and data counter
       const [result, dataCounter] = await Promise.all([
-        this.postService.all(query),
-        this.postService.data_counter(query),
+        this.tagService.all(query),
+        this.tagService.data_counter(query),
       ]);
 
-      return this.sendResponse(res, "Post fetched successfully", 200, {
+      return this.sendResponse(res, "Tag fetched successfully", 200, {
         result,
         resultPerPage,
         dataCounter,
@@ -76,7 +76,7 @@ class PostController {
     }
   );
 
-  // Get single post by ID
+  // Get single tag by ID
   get_single_data = AsyncHandler.handle(
     async (req: Request, res: Response, next: NextFunction) => {
       const { id } = req.params;
@@ -84,17 +84,17 @@ class PostController {
         return next(new ErrorHandler("ID parameter is required.", 400));
       }
 
-      // Fetch post by ID
-      const result = await this.postService.findBYpageid(id, next);
+      // Fetch tag by ID
+      const result = await this.tagService.findBYpageid(id, next);
       if (result) {
-        return this.sendResponse(res, "Post fetched successfully", 200, result);
+        return this.sendResponse(res, "Tag fetched successfully", 200, result);
       }
 
-      return next(new ErrorHandler("Post not found", 404));
+      return next(new ErrorHandler("Tag not found", 404));
     }
   );
 
-  // Update post
+  // Update category
   update = AsyncHandler.handle(
     async (req: Request, res: Response, next: NextFunction) => {
       const user: string = (req as any).user._id;
@@ -104,20 +104,20 @@ class PostController {
         return next(new ErrorHandler("User not authenticated", 401)); // Changed to 401
       }
 
-      // Update post
-      const result = await this.postService.update(req.body, files, user, next);
+      // Update Tag
+      const result = await this.tagService.update(req.body, files, user, next);
       if (result) {
-        return this.sendResponse(res, "Post updated successfully", 200);
+        return this.sendResponse(res, "Tag updated successfully", 200);
       }
 
-      return next(new ErrorHandler("Failed to update post", 500));
+      return next(new ErrorHandler("Failed to update tag", 500));
     }
   );
   removeItem = AsyncHandler.handle(
     async (req: Request, res: Response, next: NextFunction) => {
       const id: string = req.params.id;
-      const result = await this.postService.removeItem(id, next);
-      if (result) {
+      const categorie = await this.tagService.removeItem(id, next);
+      if (categorie) {
         return res.status(200).json({
           succes: true,
         });
@@ -126,4 +126,4 @@ class PostController {
   );
 }
 
-export default PostController;
+export default TagController;

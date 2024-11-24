@@ -1,15 +1,15 @@
 import { NextFunction } from "express";
-import CategorieRepository from "../../repositories/karnalwebtech/post-categorie-repositories";
 import { ImageUploader } from "../../utils/ImageUpload";
 import ErrorHandler from "../../utils/ErrorHandler";
 import ImageRepository from "../../repositories/crm/imageRepository";
 import seoRepositorie from "../../utils/comman-repositories/seo-repositorie";
+import TagRepository from "../../repositories/karnalwebtech/tag-repositories";
 
 const imageUploader = new ImageUploader();
 const add_image = new ImageRepository();
 
-class CategorieService {
-  constructor(private categorieRepository: CategorieRepository) {}
+class TagService {
+  constructor(private tagRepository: TagRepository) {}
 
   // Utility function for centralized error handling
   private handleError(message: string, next: NextFunction, code: number = 404) {
@@ -52,7 +52,7 @@ class CategorieService {
         return this.handleError("SEO data not added to database", next);
       }
 
-      return await this.categorieRepository.create(data, imageData, seo, user_id);
+      return await this.tagRepository.create(data, imageData, seo, user_id);
     } catch (error: any) {
       next(new ErrorHandler(error.message || "Internal Server Error", 500));
     }
@@ -60,14 +60,14 @@ class CategorieService {
 
   async update(data: any, files: any, user_id: string, next: NextFunction) {
     try {
-      const existingCategory = await this.categorieRepository.findBYpageid(data.id, next);
+      const existingCategory = await this.tagRepository.findBYpageid(data.id, next);
       if (!existingCategory) {
-        return this.handleError("Categorie ID does not exist", next, 400);
+        return this.handleError("Tag ID does not exist", next, 400);
       }
 
-      const existingUrl = await this.categorieRepository.findBYUrl(data.metaCanonicalUrl, existingCategory._id);
+      const existingUrl = await this.tagRepository.findBYUrl(data.metaCanonicalUrl, existingCategory._id);
       if (existingUrl) {
-        return this.handleError("Categorie with this URL already exists", next, 400);
+        return this.handleError("Tag with this URL already exists", next, 400);
       }
 
       let imageData = null;
@@ -83,34 +83,34 @@ class CategorieService {
         return this.handleError("SEO data not added to database", next);
       }
 
-      return await this.categorieRepository.update(data, imageData, user_id);
+      return await this.tagRepository.update(data, imageData, user_id);
     } catch (error: any) {
       next(new ErrorHandler(error.message || "Internal Server Error", 500));
     }
   }
 
   async findByUrl(url: string) {
-    return await this.categorieRepository.findByUrl(url);
+    return await this.tagRepository.findByUrl(url);
   }
 
   async all(query: any) {
-    return await this.categorieRepository.all(query);
+    return await this.tagRepository.all(query);
   }
 
   async data_counter(query: any) {
-    return await this.categorieRepository.data_counter(query);
+    return await this.tagRepository.data_counter(query);
   }
 
   async find_by_id(id: string, next: NextFunction) {
-    return await this.categorieRepository.find_by_id(id, next);
+    return await this.tagRepository.find_by_id(id, next);
   }
 
   async findBYpageid(id: string, next: NextFunction) {
-    return await this.categorieRepository.findBYpageid(id, next);
+    return await this.tagRepository.findBYpageid(id, next);
   }
   async removeItem(id: string, next: NextFunction) {
-    return await this.categorieRepository.removeItem(id, next);
+    return await this.tagRepository.removeItem(id, next);
   }
 }
 
-export default CategorieService;
+export default TagService;

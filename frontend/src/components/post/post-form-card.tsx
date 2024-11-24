@@ -13,6 +13,8 @@ import Seo_form from "@/components/common/seo/seo";
 import { useState } from "react";
 import SelectFields from "../common/fields-shadcn/select-field";
 import { useRouter } from "next/navigation";
+import Server_image_card from "../image_compress/Server_image_card";
+import TagSelector from "./post-tag";
 
 interface PostFromCardProps {
   imageitemData?: { img: string; name: string }[]; // Corrected to match the useState structure
@@ -21,14 +23,20 @@ interface PostFromCardProps {
   control?: any; // react form
   setValue?: any; // react form
   watch?: any; // react form
-  setKeywords: any;
-  keywords: any;
-  selectedCategories: any;
-  setSelectedCategories: any;
+  setKeywords?: any;
+  keywords?: any;
+  selectedCategories?: any;
+  setSelectedCategories?: any;
+  selectedTag?: any;
+  setSelectedTags?: any;
   isVisiableCategory?: boolean;
+  isVisiableTag?: boolean;
   pageTitle: string;
   isLoading?: boolean;
-  discard_link: string;
+  discard_link?: string;
+  image_files?: any;
+  categorieList?: any;
+  tagList?: any;
 }
 export default function PostFromCard({
   imageitemData,
@@ -41,10 +49,13 @@ export default function PostFromCard({
   setKeywords,
   selectedCategories,
   setSelectedCategories,
-  isVisiableCategory = true,
+  isVisiableCategory = false,
+  isVisiableTag = false,
   pageTitle,
   isLoading = false,
-  discard_link
+  discard_link, image_files, categorieList, selectedTag,
+  setSelectedTags,
+  tagList,
 }: PostFromCardProps) {
   const [postType, setPostType] = useState<string>(pageTitle);
 
@@ -148,15 +159,25 @@ export default function PostFromCard({
                     class_cat={"text-gray-200"}
                     setSelectedCategories={setSelectedCategories}
                     selectedCategories={selectedCategories}
+                    categorieList={categorieList}
                   />
                 </ScrollArea>
               )}
-
+              {isVisiableTag && (
+                <ScrollArea className="h-[200px] w-full my-2  rounded-md border p-4">
+                  <TagSelector
+                    class_cat={"text-gray-200"}
+                    selectedTag={selectedTag}
+                    setSelectedTags={setSelectedTags}
+                    tagList={tagList}
+                  />
+                </ScrollArea>
+              )}
               {imageitemData ? (
                 <div className="text-gray-200 my-2 bg-black w-full rounded-md border p-4">
                   <h3 className="text-xl">Feature Image</h3>
                   <div className="flex w-full flex-wrap my-2 gap-2">
-                    {imageitemData.map((item, index) => (
+                    {imageitemData.length > 0 ? imageitemData.map((item, index) => (
                       <div key={index} className="w-[100%]">
                         <Image_card
                           item={item}
@@ -164,7 +185,17 @@ export default function PostFromCard({
                           onDelete={handleDelete}
                         />
                       </div>
-                    ))}
+                    )) :
+
+                      <div className="w-[100%]">
+                        <Server_image_card
+                          src={image_files?.path}
+                          alt={image_files?.originalname}
+                          width={200}
+                          height={200}
+                        />
+                      </div>
+                    }
                   </div>
                 </div>
               ) : null}
