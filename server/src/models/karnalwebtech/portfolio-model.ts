@@ -8,7 +8,7 @@ export interface IPost extends Document {
   title: string;
   slug: string;
   content?: string;
-  post_id: string;
+  ptfo_id: string;
   status: string;
   audit_log: mongoose.Types.ObjectId;
   feature_image: mongoose.Types.ObjectId;
@@ -22,10 +22,10 @@ export interface IPost extends Document {
 }
 
 // Define the Post Schema
-const PostSchema: Schema = new Schema(
+const PortfolioSchema: Schema = new Schema(
   {
     _no: { type: Number, default: 0 },
-    post_id: { type: String, default: null },
+    ptfo_id: { type: String, default: null },
     title: { type: String, default: null },
     slug: { type: String, default: null },
     content: { type: String, default: null },
@@ -47,12 +47,12 @@ const PostSchema: Schema = new Schema(
 );
 
 // Method to generate a slug from the title
-PostSchema.methods.generateSlug = function (): string {
+PortfolioSchema.methods.generateSlug = function (): string {
   return slugify(this.title, { lower: true, strict: true, replacement: "-" });
 };
 
 // Pre-save middleware to set slug and description if not provided
-PostSchema.pre<IPost>("save", function (next) {
+PortfolioSchema.pre<IPost>("save", function (next) {
   if (!this.slug) {
     this.slug = this.generateSlug(); // Set the slug if it's not provided
   }
@@ -60,9 +60,9 @@ PostSchema.pre<IPost>("save", function (next) {
 });
 
 // Create and export the model
-const PostModel: Model<IPost> = thardConnection.model<IPost>(
-  "karnal_Post",
-  PostSchema
+const PortfolioModel: Model<IPost> = thardConnection.model<IPost>(
+  "karnal_Portfolio",
+  PortfolioSchema
 );
 
-export default PostModel;
+export default PortfolioModel;

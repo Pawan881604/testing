@@ -7,10 +7,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  useDeleteCateorieMutation,
-  useGetAllcategorieQuery,
-} from "@/state/karnal-web-tech/categorieApi";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { TimeAgo } from "@/lib/service/time/timeAgo";
 import Shadcn_table from "@/components/common/shadcn-table/table";
@@ -19,31 +15,35 @@ import { Button } from "@/components/ui/button";
 import { Trash2, MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useHandleNotifications } from "@/hooks/useHandleNotifications";
+import {
+  useDeletePortfolioMutation,
+  useGetAllPortfolioQuery,
+} from "@/state/karnal-web-tech/portfolioApi";
 
-interface Customer_list_props {}
+interface list_props {}
 
-const CategorieList: React.FC<Customer_list_props> = () => {
+const PortfolioList: React.FC<list_props> = () => {
   const [rowsPerPage, setRowsPerPage] = useState<string>("25");
   const [page, setPage] = useState<number>(1);
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
   const router = useRouter();
 
   //---------- all hookes
-  const { data, error, isLoading } = useGetAllcategorieQuery({
+  const { data, error, isLoading } = useGetAllPortfolioQuery({
     rowsPerPage: Number(rowsPerPage),
     page: page,
-    type: "post",
   });
   const [
-    deleteCateorie,
+    deleteTag,
     { error: deleteError, isLoading: deleteLoading, isSuccess },
-  ] = useDeleteCateorieMutation();
+  ] = useDeletePortfolioMutation();
   useHandleNotifications({
     error: error || deleteError,
     isSuccess,
-    successMessage: "Category deleted successfully!",
+    successMessage: "Portfolio deleted successfully!",
   });
   const { data: api_data } = data || {};
+
   const {
     searchTerm,
     setSearchTerm,
@@ -54,14 +54,14 @@ const CategorieList: React.FC<Customer_list_props> = () => {
 
   const table_header: string[] = [
     "Title",
-    "	Author",
+    "Author",
     "Date",
     "Status",
     "Action",
   ];
   const categorie_dropdown: any[] = [];
   const removeRow = async (remove_id: string) => {
-    await deleteCateorie(remove_id);
+    await deleteTag(remove_id);
   };
   function tabel_body() {
     return filteredItems?.map((post: any) => (
@@ -82,7 +82,7 @@ const CategorieList: React.FC<Customer_list_props> = () => {
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem
                 className="cursor-pointer"
-                onClick={() => navigator.clipboard.writeText(post.cat_id)}
+                onClick={() => navigator.clipboard.writeText(post.ptfo_id)}
               >
                 Copy ID
               </DropdownMenuItem>
@@ -90,14 +90,14 @@ const CategorieList: React.FC<Customer_list_props> = () => {
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() =>
-                  router.push(`/karnalwebtech/post/categorie/${post.cat_id}`)
+                  router.push(`/karnalwebtech/portfolio/${post.ptfo_id}`)
                 }
               >
-                Edit Categorie
+                Edit portfolio
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="cursor-pointer flex items-center"
-                onClick={() => removeRow(post.cat_id)}
+                onClick={() => removeRow(post.ptfo_id)}
               >
                 <Trash2 color="red" /> Delete
               </DropdownMenuItem>
@@ -129,4 +129,4 @@ const CategorieList: React.FC<Customer_list_props> = () => {
   );
 };
 
-export default CategorieList;
+export default PortfolioList;
