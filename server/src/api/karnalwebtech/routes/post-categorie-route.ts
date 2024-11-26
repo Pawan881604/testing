@@ -20,11 +20,23 @@ const categorieRoutes = (postCategorieConroller: CategorieController) => {
   );
   router.get(
     "/data/:id",
-    // isAuthenticatedUser,
-    // authorizeRoles("admin", "employee"),
+    isAuthenticatedUser,
+    authorizeRoles("admin", "employee"),
     postCategorieConroller.get_single_data.bind(postCategorieConroller)
   );
-
+  router.delete(
+    "/data/:id",
+    isAuthenticatedUser,
+    authorizeRoles("admin", "employee"),
+    postCategorieConroller.removeItem.bind(postCategorieConroller)
+  );
+  router.put(
+    "/update",
+    upload.array("images", 10),
+    isAuthenticatedUser,
+    authorizeRoles("admin", "employee"),
+    postCategorieConroller.update.bind(postCategorieConroller)
+  );
   return router;
 };
 export default categorieRoutes;

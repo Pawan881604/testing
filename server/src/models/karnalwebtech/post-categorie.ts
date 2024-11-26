@@ -8,12 +8,14 @@ export interface IPost extends Document {
   title: string;
   slug: string;
   content?: string;
+  description?:string;
   cat_id: string;
   status: string;
   audit_log: mongoose.Types.ObjectId;
   feature_image: mongoose.Types.ObjectId;
   seo: mongoose.Types.ObjectId;
   is_active?: boolean;
+  type: string;
   is_delete?: boolean;
   generateSlug: () => string;
   generateDescription: () => string;
@@ -23,10 +25,12 @@ export interface IPost extends Document {
 const PostSchema: Schema = new Schema(
   {
     _no: { type: Number, default: 0 },
-    cat_id: { type: String, default: "" },
-    title: { type: String, default: "" },
-    slug: { type: String, default: "" },
-    content: { type: String, default: "" },
+    cat_id: { type: String, default: null },
+    description: { type: String, default: null },
+    type: { type: String, default: null },
+    title: { type: String, default: null },
+    slug: { type: String, default: null },
+    content: { type: String, default: null },
     feature_image: { type: Schema.Types.ObjectId, ref: "Karnal_web_Image" },
     seo: { type: Schema.Types.ObjectId, ref: "Karnal_web_seo" },
     status: { type: String, default: "Draft" },
@@ -57,7 +61,7 @@ PostSchema.pre<IPost>("save", function (next) {
 
 // Create and export the model
 const PostCategorieModel: Model<IPost> = thardConnection.model<IPost>(
-  "karnal_Post_categorie",
+  "Karnal_categorie",
   PostSchema
 );
 

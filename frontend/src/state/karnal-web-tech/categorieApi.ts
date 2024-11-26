@@ -42,6 +42,28 @@ export const karnal_CategorieApi = createApi({
       },
       invalidatesTags: [{ type: "Categorie-karnal", id: "LIST" }],
     }),
+    update: builder.mutation<any, any>({
+      query: (data) => {
+        console.log(data);
+        const formData = new FormData();
+        for (let [key, value] of Object.entries(data)) {
+          if (key === "images" && Array.isArray(value)) {
+            // Assuming 'images' is an array of files, append each file separately
+            value.forEach((file: any) => formData.append("images", file));
+          } else if (value !== undefined && value !== null) {
+            formData.append(key, value.toString());
+
+            // For all other fields, just append key-value pairs
+          }
+        }
+        return {
+          url: "v2/categorie/update",
+          method: "PUT",
+          body: formData, // Use formData as body
+        };
+      },
+      invalidatesTags: [{ type: "Categorie-karnal", id: "LIST" }],
+    }),
     getSingle: builder.query<any, string>({
       query: (id: string) => ({
         url: `v2/categorie/data/${id}`,
@@ -49,15 +71,19 @@ export const karnal_CategorieApi = createApi({
       }),
       providesTags: [{ type: "Categorie-karnal", id: "LIST" }],
     }),
+    deleteCateorie: builder.mutation<any, any>({
+      query: (id) => ({
+        url: `v2/categorie/data/${id}`,
+        method: "DELETE", // Use DELETE instead of PUT
+      }),
+      invalidatesTags: [{ type: "Categorie-karnal", id: "LIST" }],
+    }),
     getAllcategorie: builder.query<
       any,
       {
-        is_delete?: string;
-        keyword?: string;
-        status?: string;
+        type?: string;
         rowsPerPage?: number;
         page?: number;
-        is_active?: string;
       } | void
     >({
       query: (filters) => {
@@ -67,6 +93,9 @@ export const karnal_CategorieApi = createApi({
         };
         // Add filters to the query parameters if they are present
         if (filters) {
+          if (filters.type) {
+            params.type = filters.type; // Convert number to string
+          }
           if (filters.rowsPerPage) {
             params.rowsPerPage = filters.rowsPerPage; // Convert number to string
           }
@@ -91,4 +120,6 @@ export const {
   useAddNewCategorieMutation,
   useGetAllcategorieQuery,
   useGetSingleQuery,
+  useUpdateMutation,
+  useDeleteCateorieMutation,
 } = karnal_CategorieApi;

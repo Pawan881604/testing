@@ -33,6 +33,10 @@ import { orderApi } from "@/state/orderApi";
 import { expencesApi } from "@/state/expenseApi";
 import { purchaseApi } from "@/state/purchaseApi";
 import { karnal_CategorieApi } from "@/state/karnal-web-tech/categorieApi";
+import { karnal_TagApi } from "@/state/karnal-web-tech/tagApi";
+import { karnal_Post_Api } from "@/state/karnal-web-tech/postApi";
+import { karnal_Portfolio_Api } from "@/state/karnal-web-tech/portfolioApi";
+import { karnal_Image_Api } from "@/state/karnal-web-tech/imageApi";
 
 /* REDUX PERSISTENCE */
 const createNoopStorage = () => {
@@ -73,6 +77,11 @@ const rootReducer = combineReducers({
   [purchaseApi.reducerPath]: purchaseApi.reducer,
   //------------ karnal web tech
   [karnal_CategorieApi.reducerPath]: karnal_CategorieApi.reducer,
+  [karnal_TagApi.reducerPath]: karnal_TagApi.reducer,
+  [karnal_Post_Api.reducerPath]: karnal_Post_Api.reducer,
+  [karnal_Portfolio_Api.reducerPath]: karnal_Portfolio_Api.reducer,
+  [karnal_Image_Api.reducerPath]: karnal_Image_Api.reducer,
+  
 });
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
@@ -98,7 +107,11 @@ export const makeStore = () => {
         .concat(purchaseApi.middleware)
         .concat(expencesApi.middleware)
         //-------------- karnal web tech
-        .concat(karnal_CategorieApi.middleware),
+        .concat(karnal_CategorieApi.middleware)
+        .concat(karnal_TagApi.middleware)
+        .concat(karnal_Portfolio_Api.middleware)
+        .concat(karnal_Post_Api.middleware)
+        .concat(karnal_Image_Api.middleware),
   });
 };
 
