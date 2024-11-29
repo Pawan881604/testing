@@ -88,11 +88,13 @@ class CategorieService {
       next(new ErrorHandler(error.message || "Internal Server Error", 500));
     }
   }
-
-  async findByUrl(url: string) {
-    return await this.categorieRepository.findByUrl(url);
+  
+  async findByExistUrl(url: string,next: NextFunction) {
+    return await this.categorieRepository.findByExistUrl(url,next);
   }
-
+  async findBySlug(url: string,next: NextFunction) {
+    return await this.categorieRepository.findBySlug(url,next);
+  }
   async all(query: any) {
     return await this.categorieRepository.all(query);
   }

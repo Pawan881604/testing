@@ -25,10 +25,9 @@ class CategorieController {
     async (req: Request, res: Response, next: NextFunction) => {
       const userId = (req as any).user?._id; // Use the correct type for the request user
       const files = req.files;
-
       // Check if URL already exists
-      const isExistingUrl = await this.categorieService.findByUrl(
-        req.body.metaCanonicalUrl
+      const isExistingUrl = await this.categorieService.findByExistUrl(
+        req.body.metaCanonicalUrl,next
       );
       if (isExistingUrl) {
         return next(
@@ -79,13 +78,16 @@ class CategorieController {
   // Get single category by ID
   get_single_data = AsyncHandler.handle(
     async (req: Request, res: Response, next: NextFunction) => {
-      const { id } = req.params;
-      if (!id) {
-        return next(new ErrorHandler("ID parameter is required.", 400));
+      const { id, slug } = req.params;
+      if (!id && !slug) {
+        return next(
+          new ErrorHandler("Either ID or slug parameter is required.", 400)
+        );
       }
-
       // Fetch category by ID
-      const result = await this.categorieService.findBYpageid(id, next);
+      const result = id
+        ? await this.categorieService.findBYpageid(id, next)
+        : await this.categorieService.findBySlug(slug, next);
       if (result) {
         return this.sendResponse(
           res,
@@ -104,7 +106,7 @@ class CategorieController {
     async (req: Request, res: Response, next: NextFunction) => {
       const user: string = (req as any).user._id;
       const files = req.files;
-
+    
       if (!user) {
         return next(new ErrorHandler("User not authenticated", 401)); // Changed to 401
       }

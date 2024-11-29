@@ -97,25 +97,53 @@ class PostController {
     }
   );
 
-  // Get single post by ID
   get_single_data = AsyncHandler.handle(
     async (req: Request, res: Response, next: NextFunction) => {
       const { id, slug } = req.params;
       if (!id && !slug) {
-        return next(
-          new ErrorHandler("Either ID or slug parameter is required.", 400)
-        );
+        return next(new ErrorHandler("Either ID or slug parameter is required.", 400));
       }
-
-      const result = id
-        ? await this.postService.findBYpageid(id, next)
-        : await this.postService.findBYSlug(slug, next);
-
-      if (result) {
-        return this.sendResponse(res, "Post fetched successfully", 200, result);
+  
+      // Generate cache key based on the id or slug
+      const cacheKey = id ? `post:${id}` : `post:${slug}`;
+      console.log(`Checking cache for key: ${cacheKey}`);
+  
+      try {
+        // Check if data is in Redis cache
+        const cachedPosts = await redisClient1.get(cacheKey);
+        if (cachedPosts) {
+          console.log("Cache hit");
+          return res.json(JSON.parse(cachedPosts)); // Return cached posts
+        }
+        console.log("Cache miss");
+  
+        // Fetch post data from database
+        const result = id
+          ? await this.postService.findBYpageid(id, next)
+          : await this.postService.findBYSlug(slug, next);
+  
+        if (result) {
+          // Store the result in Redis cache
+          const cacheData = {
+            success: true,
+            message: "Post fetched successfully",
+            result,
+          };
+          try {
+            await redisClient1.setEx(cacheKey, 3600, JSON.stringify(cacheData)); // Cache for 1 hour
+            console.log("Data cached successfully");
+          } catch (cacheError) {
+            console.log("Cache set failed", cacheError);
+          }
+  
+          return this.sendResponse(res, "Post fetched successfully", 200, result);
+        }
+  
+        return next(new ErrorHandler("Post not found", 404));
+      } catch (error) {
+        console.log("Error in fetching post", error);
+        return next(new ErrorHandler("Internal Server Error", 500));
       }
-
-      return next(new ErrorHandler("Post not found", 404));
     }
   );
 
